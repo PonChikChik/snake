@@ -1,43 +1,47 @@
 let game = {
   canvas: null,
   ctx: null,
+  board: null,
+  width: 640,
+  height: 360,
   sprites: {
-    background: null,
-    cell: null,
+      background: null,
+      cell: null,
   },
-
-  start(){
-    this.canvas = document.getElementById('mycanvas');
-    this.ctx = this.canvas.getContext('2d');
-      
-    this.preload(() =>{
-      this.run();
-    });
+  start() {
+      this.init();
+      this.preload(() => {
+          this.run();
+      });
   },
-    
-  preload(callback){
-    let loaded = 0;
-    let required = 2;
+  init() {
+      this.canvas = document.getElementById("mycanvas");
+      this.ctx = this.canvas.getContext("2d");
+  },
+  preload(callback) {
+      let loaded = 0;
+      let required = Object.keys(this.sprites).length;
 
-    let onAssetLoad = () => {
-      ++loaded;
+      let onAssetLoad = () => {
+          ++loaded;
 
-      if(loaded >= required){
-        callback();
+          if (loaded >= required) {
+              callback();
+          }
+      };
+      for (let key in this.sprites) {
+          this.sprites[key] = new Image();
+          this.sprites[key].src = "img/" + key + ".png";
+          this.sprites[key].addEventListener("load", onAssetLoad);
       }
-    };
-
-    for(let key in this.sprites){
-      this.sprites[key] = new Image();
-      this.sprites[key].src = 'img/' + key +'.png';
-      this.sprites[key].addEventListener('load', onAssetLoad);
-    }
   },
-
-  run(){
-    window.requestAnimationFrame(() => {
-      this.ctx.drawImage(this.sprites.background, 0, 0);
-    });
+  run() {
+      this.board.create();
+      
+      window.requestAnimationFrame(() => {
+          this.ctx.drawImage(this.sprites.background, 0, 0);
+          this.board.render();
+      });
   }
 };
 
