@@ -2,11 +2,13 @@ let game = {
   canvas: null,
   ctx: null,
   board: null,
+  snake: null,
   width: 640,
   height: 360,
   sprites: {
       background: null,
       cell: null,
+      body: null,
   },
   start() {
       this.init();
@@ -37,10 +39,12 @@ let game = {
   },
   run() {
       this.board.create();
+      this.snake.create();
       
       window.requestAnimationFrame(() => {
           this.ctx.drawImage(this.sprites.background, 0, 0);
           this.board.render();
+          this.snake.render();
       });
   }
 };
