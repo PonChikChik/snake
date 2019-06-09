@@ -1,6 +1,33 @@
 game.snake = {
   game: game,
   cells: [],
+  moving: false,
+  direction: false,
+  directions: {
+    up: {
+      row: -1,
+      col: 0,
+      angle: 0,
+    },
+
+    down: {
+      row: 1,
+      col: 0,
+      angle: 180,
+    },
+
+    left: {
+      row: 0,
+      col: -1,
+      angle: 270,
+    },
+
+    right: {
+      row: 0,
+      col: 1,
+      angle: 90,
+    }
+  },
   
   create(){
     let startCells = [
@@ -13,17 +40,83 @@ game.snake = {
         coll: 7,
       }
     ];
+    this.direction = this.directions.up;
 
     for(let startCell of startCells){
-      let cell = this.game.board.getCell(startCell.row, startCell.coll)
+      let cell = this.game.board.getCell(startCell.row, startCell.coll);
 
       this.cells.push(cell);
     }
   },
 
+  renderHead(){
+    let head = this.cells[0];
+    let halfSize = this.game.sprites.head.width / 2;
+
+    this.game.ctx.save();
+    this.game.ctx.translate(head.x, head.y);
+    this.game.ctx.translate(halfSize, halfSize);
+
+    this.game.ctx.rotate(this.direction.angle * Math.PI / 180);
+
+    this.game.ctx.drawImage(this.game.sprites.head, -halfSize, -halfSize);
+
+    this.game.ctx.restore();
+  },
+
+  renderBody(){
+    for(let i = 1; i < this.cells.length; ++i){
+      this.game.ctx.drawImage(this.game.sprites.body, this.cells[i].x, this.cells[i].y);
+    }
+  },
+
   render(){
-    this.cells.forEach(cell => {
-      this.game.ctx.drawImage(this.game.sprites.body, cell.x, cell.y);
-  });
+    this.renderHead();
+    this.renderBody();
+  },
+
+  start(keyCode){
+    switch(keyCode){
+      case 37: this.direction = this.directions.left; break;
+      case 38: this.direction = this.directions.up; break;
+      case 39: this.direction = this.directions.right; break;
+      case 40: this.direction = this.directions.down; break;
+    };
+
+    this.moving = true;
+  },
+
+  move(){
+    if(!this.moving){
+      return;
+    }
+
+    let cell = this.getNextCell();
+
+    if(!cell || this.hasCell(cell) || this.game.board.isBombCell(cell)){
+      this.game.stop();
+    }else{
+      this.cells.unshift(cell);
+
+      if(!this.game.board.isFoodCell(cell)){
+        this.cells.pop();
+      }else{
+        this.game.board.createFood();
+      };
+    }
+  },
+
+  hasCell(cell){
+    return this.cells.find(path => {
+      return path === cell;
+    })
+  },
+
+  getNextCell(){
+    let head = this.cells[0],
+        row = head.row + this.direction.row,
+        col = head.col + this.direction.col;
+
+    return this.game.board.getCell(row, col);
   }
 };
